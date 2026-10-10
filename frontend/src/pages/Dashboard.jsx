@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuthStore, useAquariumStore } from '../context/store';
 import { aquariumAPI } from '../services/api';
 import AquariumList from '../components/AquariumList';
@@ -7,22 +6,15 @@ import AquariumForm from '../components/AquariumForm';
 import '../styles/dashboard.css';
 
 export default function Dashboard() {
-  const navigate = useNavigate();
-  const { user, logout } = useAuthStore((state) => ({
+  const { user } = useAuthStore((state) => ({
     user: state.user,
-    logout: state.logout,
   }));
   const { aquariums, setAquariums, loading, setLoading } = useAquariumStore();
   const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
-    if (!user) {
-      navigate('/login');
-      return;
-    }
-
     fetchAquariums();
-  }, [user, navigate]);
+  }, []);
 
   const fetchAquariums = async () => {
     setLoading(true);
@@ -36,22 +28,12 @@ export default function Dashboard() {
     }
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
   return (
     <div className="dashboard">
       <header className="dashboard-header">
         <div className="header-left">
           <h1>🐠 피쉬 키우기</h1>
           <p>환영합니다, {user?.username}님!</p>
-        </div>
-        <div className="header-right">
-          <button className="btn-logout" onClick={handleLogout}>
-            로그아웃
-          </button>
         </div>
       </header>
 

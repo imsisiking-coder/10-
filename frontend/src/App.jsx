@@ -1,35 +1,27 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useAuthStore } from './context/store';
-import Login from './pages/Login';
-import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import './App.css';
 
-function ProtectedRoute({ children }) {
-  const user = useAuthStore((state) => state.user);
-  return user ? children : <Navigate to="/login" />;
-}
-
 export default function App() {
   useEffect(() => {
-    useAuthStore.getState().loadFromStorage();
+    // 테스트 사용자 자동 설정
+    const { user } = useAuthStore.getState();
+    if (!user) {
+      useAuthStore.getState().setAuth(
+        { id: 1, email: 'test@example.com', username: '테스트사용자' },
+        'test_token_' + Date.now(),
+        'test_refresh_token_' + Date.now()
+      );
+    }
   }, []);
 
   return (
     <Router>
       <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="/" element={<Navigate to="/dashboard" />} />
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
     </Router>
   );
