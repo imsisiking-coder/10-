@@ -1,0 +1,119 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+a {
+  color: #2196F3;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  padding: 10px 16px;
+  transition: all 0.3s ease;
+
+  &:hover:not(:disabled) {
+    opacity: 0.9;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+input,
+select,
+textarea {
+  font-family: inherit;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 14px;
+
+  &:focus {
+    outline: none;
+    border-color: #2196F3;
+    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+  }
+}
+
+.btn-primary {
+  background-color: #2196F3;
+  color: white;
+
+  &:hover:not(:disabled) {
+    background-color: #1976D2;
+  }
+}
+
+.btn-secondary {
+  background-color: #757575;
+  color: white;
+
+  &:hover:not(:disabled) {
+    background-color: #616161;
+  }
+}
+
+.btn-danger {
+  background-color: #f44336;
+  color: white;
+
+  &:hover:not(:disabled) {
+    background-color: #d32f2f;
+  }
+}
+
+.btn-logout {
+  background-color: transparent;
+  color: #2196F3;
+  border: 1px solid #2196F3;
+  padding: 8px 16px;
+
+  &:hover:not(:disabled) {
+    background-color: rgba(33, 150, 243, 0.1);
+  }
+}
+
+.error-message {
+  background-color: #ffebee;
+  border-left: 4px solid #f44336;
+  color: #c62828;
+  padding: 12px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #999;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: #999;
+
+  p {
+    margin: 8px 0;
+  }
+}
