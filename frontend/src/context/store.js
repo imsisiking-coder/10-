@@ -12,6 +12,14 @@ export const useAuthStore = create((set) => ({
     localStorage.setItem('user', JSON.stringify(user));
   },
 
+  updateProfile: (updates) => {
+    set((state) => {
+      const nextUser = { ...(state.user || {}), ...updates };
+      localStorage.setItem('user', JSON.stringify(nextUser));
+      return { user: nextUser };
+    });
+  },
+
   logout: () => {
     set({ user: null, accessToken: null, refreshToken: null });
     localStorage.removeItem('accessToken');
@@ -50,6 +58,18 @@ export const useAquariumStore = create((set) => ({
     set((state) => ({
       aquariums: state.aquariums.map((a) =>
         a.id === id ? { ...a, ...updates } : a
+      ),
+    })),
+
+  addFishToAquarium: (aquariumId, fish) =>
+    set((state) => ({
+      aquariums: state.aquariums.map((a) =>
+        a.id === aquariumId
+          ? {
+              ...a,
+              Fish: [...(a.Fish || []), fish],
+            }
+          : a
       ),
     })),
 
