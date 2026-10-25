@@ -5,7 +5,7 @@ import { authAPI } from '../services/api';
 import '../styles/auth.css';
 
 export default function Login() {
-  const [email, setEmail] = useState('');
+  const [loginId, setLoginId] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -18,15 +18,15 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const data = await authAPI.login(email, password);
+      const data = await authAPI.login(loginId, password);
       setAuth(data.user, data.accessToken, data.refreshToken);
       navigate('/dashboard');
     } catch (err) {
       if (err.response?.status === 401 || err.code === 'ERR_NETWORK' || !err.response) {
         const demoUser = {
           id: Date.now(),
-          email: email || 'demo@example.com',
-          username: email?.split('@')[0] || '테스트사용자',
+          email: loginId.includes('@') ? loginId : 'demo@example.com',
+          username: loginId || '테스트사용자',
         };
 
         setAuth(demoUser, 'demo_access_token', 'demo_refresh_token');
@@ -61,13 +61,13 @@ export default function Login() {
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label>이메일</label>
+            <label>아이디 또는 이메일</label>
             <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              type="text"
+              value={loginId}
+              onChange={(e) => setLoginId(e.target.value)}
               required
-              placeholder="your@email.com"
+              placeholder="아이디 또는 your@email.com"
             />
           </div>
 

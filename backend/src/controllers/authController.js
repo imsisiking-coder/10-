@@ -1,5 +1,6 @@
 import User from '../models/User.js';
 import authService from '../services/authService.js';
+import emailService from '../services/emailService.js';
 
 export const register = async (req, res) => {
   try {
@@ -43,21 +44,33 @@ export const register = async (req, res) => {
 
 export const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { loginId, email, password } = req.body;
+    const identifier = (loginId ?? email ?? '').trim();
 
-    // 사용자 찾기
-    const user = await User.findOne({ where: { email } });
-    if (!user) {
-      return res.status(401).json({ error: '이메일 또는 비밀번호가 잘못되었습니다.' });
+    if (!identifier) {
+      return res.status(401).json({ error: '아이디 또는 이메일을 입력해 주세요.' });
     }
 
-    // 비밀번호 확인
+    let user = null;
+
+    if (identifier.includes('@')) {
+      user = await User.findOne({ where: { email: identifier } });
+    } else {
+      user = await User.findOne({ where: { username: identifier } });
+      if (!user) {
+        user = await User.findOne({ where: { email: identifier } });
+      }
+    }
+
+    if (!user) {
+      return res.status(401).json({ error: '아이디 또는 비밀번호가 잘못되었습니다.' });
+    }
+
     const isValid = await authService.comparePassword(password, user.password_hash);
     if (!isValid) {
-      return res.status(401).json({ error: '이메일 또는 비밀번호가 잘못되었습니다.' });
+      return res.status(401).json({ error: '아이디 또는 비밀번호가 잘못되었습니다.' });
     }
 
-    // 토큰 생성
     const accessToken = authService.generateAccessToken(user.id, user.email);
     const refreshToken = authService.generateRefreshToken(user.id, user.email);
 
@@ -101,5 +114,26 @@ export const refresh = async (req, res) => {
   } catch (error) {
     console.error('토큰 갱신 오류:', error);
     res.status(500).json({ error: '토큰 갱신 중 오류가 발생했습니다.' });
+  }
+};
+
+export const sendTestEmail = async (req, res) => {
+  try {
+    const userEmail = req.user?.email;
+    if (!userEmail) {
+      return res.status(401).json({ error: '로그인된 사용자 정보가 없습니다.' });
+    }
+
+    await emailService.sendTestEmail(userEmail);
+
+    res.status(200).json({
+      message: '테스트 알림 이메일을 발송했습니다.',
+      email: userEmail,
+    });
+  } catch (error) {
+    console.error('테스트 이메일 전송 오류:', error);
+    res.status(500).json({
+      error: error.message || '테스트 이메일 전송에 실패했습니다.',
+    });
   }
 };

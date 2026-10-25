@@ -1,6 +1,9 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { existsSync } from 'fs';
 import sequelize from './config/database.js';
 import { authenticateToken, errorHandler } from './middleware/auth.js';
 import { initializeEmailAlarmJob } from './jobs/emailAlarmJob.js';
@@ -21,7 +24,10 @@ import scheduleRoutes from './routes/schedules.js';
 
 dotenv.config();
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const app = express();
+const frontendDistPath = path.resolve(__dirname, '../public');
 
 // 미들웨어
 app.use(cors({
@@ -40,6 +46,16 @@ app.use('/api/v1/schedules', scheduleRoutes);
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'OK' });
 });
+
+if (existsSync(frontendDistPath)) {
+  app.use(express.static(frontendDistPath));
+  app.get(/^\/(?!api).*$/, (req, res, next) => {
+    if (req.path.startsWith('/api') || req.path === '/health') {
+      return next();
+    }
+    return res.sendFile(path.join(frontendDistPath, 'index.html'));
+  });
+}
 
 // 에러 핸들러
 app.use(errorHandler);

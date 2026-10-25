@@ -1,4 +1,6 @@
 export const fishAssets = {
+  freshwater: 'https://images.unsplash.com/photo-1544551763-46a013bb70b5?auto=format&fit=crop&w=900&q=80',
+  saltwater: 'https://images.unsplash.com/photo-1520637836862-4d197d17c90a?auto=format&fit=crop&w=900&q=80',
   guppy: 'https://upload.wikimedia.org/wikipedia/commons/5/5e/Guppy_Poecilia_reticulata.jpg',
   tetra: 'https://upload.wikimedia.org/wikipedia/commons/9/97/Neonsalmler_Paracheirodon_innesi.jpg',
   clownfish: 'https://upload.wikimedia.org/wikipedia/commons/a/ad/Amphiprion_ocellaris_%28Clown_anemonefish%29_by_Nick_Hobgood.jpg',

@@ -5,7 +5,8 @@ dotenv.config();
 
 const useSQLiteFallback =
   process.env.DB_DIALECT === 'sqlite' ||
-  (!process.env.DB_HOST && !process.env.DB_USER && !process.env.DB_PASSWORD);
+  (!process.env.DB_HOST && !process.env.DB_USER && !process.env.DB_PASSWORD) ||
+  (process.env.DB_HOST === 'localhost' && process.env.DB_DIALECT !== 'postgres');
 
 const sequelize = useSQLiteFallback
   ? new Sequelize({

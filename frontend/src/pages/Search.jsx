@@ -24,11 +24,20 @@ const filters = ['전체', '담수', '해수', '초급', '중급', '고급'];
 export default function Search() {
   const [query, setQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('전체');
+  const [showModal, setShowModal] = useState(false);
+  const [draftFish, setDraftFish] = useState({
+    name: '',
+    type: '담수',
+    image: '',
+  });
+  const [customFishList, setCustomFishList] = useState([]);
   const aquariums = useAquariumStore((state) => state.aquariums);
   const addFishToAquarium = useAquariumStore((state) => state.addFishToAquarium);
 
+  const allFish = useMemo(() => [...fishData, ...customFishList], [customFishList]);
+
   const filteredFish = useMemo(() => {
-    return fishData.filter((fish) => {
+    return allFish.filter((fish) => {
       const matchesQuery = fish.name.toLowerCase().includes(query.toLowerCase());
       const matchesFilter =
         activeFilter === '전체' ||
@@ -37,7 +46,7 @@ export default function Search() {
 
       return matchesQuery && matchesFilter;
     });
-  }, [query, activeFilter]);
+  }, [query, activeFilter, allFish]);
 
   const handleAddFish = (fish) => {
     if (!aquariums.length) {
@@ -62,6 +71,46 @@ export default function Search() {
     alert(`${fish.name}이(가) ${targetAquarium.name}에 추가되었습니다.`);
   };
 
+  const handleImageUpload = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const previewUrl = URL.createObjectURL(file);
+    setDraftFish((prev) => ({ ...prev, image: previewUrl }));
+  };
+
+  const handleAddCustomFish = () => {
+    const name = draftFish.name.trim();
+    const type = draftFish.type;
+
+    if (!name) {
+      alert('물고기 이름을 입력해 주세요.');
+      return;
+    }
+
+    const duplicate = allFish.some((fish) => fish.name === name);
+    if (duplicate) {
+      alert(`${name}은(는) 이미 목록에 있어요. 다른 이름을 사용해 주세요.`);
+      return;
+    }
+
+    const customFish = {
+      id: Date.now(),
+      name,
+      type,
+      difficulty: '사용자 추가',
+      habitat: type === '담수' ? '맞춤 어항' : '해수 어항',
+      temperature: type === '담수' ? '24~28°C' : '24~27°C',
+      description: `${type} 어항에 잘 어울리는 맞춤 물고기입니다.`,
+      image: draftFish.image || (type === '담수' ? fishAssets.freshwater : fishAssets.saltwater),
+    };
+
+    setCustomFishList((prev) => [customFish, ...prev]);
+    setDraftFish({ name: '', type: '담수', image: '' });
+    setShowModal(false);
+    alert(`${name}이(가) 물고기 목록에 추가되었습니다.`);
+  };
+
   return (
     <div className="page-shell">
       <header className="page-header">
@@ -72,14 +121,25 @@ export default function Search() {
       </header>
 
       <section className="search-panel panel">
-        <div className="search-input-wrap">
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="물고기 이름을 입력하세요"
-            aria-label="물고기 검색"
-          />
+        <div className="search-header-row">
+          <div className="search-input-wrap">
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="물고기 이름을 입력하세요"
+              aria-label="물고기 검색"
+            />
+          </div>
+
+          <button
+            type="button"
+            className="plus-fish-button"
+            onClick={() => setShowModal(true)}
+            aria-label="새 물고기 추가"
+          >
+            +
+          </button>
         </div>
 
         <div className="filter-row">
@@ -139,6 +199,61 @@ export default function Search() {
           </div>
         )}
       </section>
+
+      {showModal && (
+        <div className="modal-backdrop" onClick={() => setShowModal(false)}>
+          <div className="custom-fish-modal panel" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>새 물고기 추가</h2>
+              <button type="button" className="close-button" onClick={() => setShowModal(false)}>×</button>
+            </div>
+
+            <div className="modal-body">
+              <label className="field-label">
+                물고기 이름
+                <input
+                  type="text"
+                  value={draftFish.name}
+                  onChange={(e) => setDraftFish((prev) => ({ ...prev, name: e.target.value }))}
+                  placeholder="예: 금붕어, 클라운피시"
+                />
+              </label>
+
+              <label className="field-label">
+                종류
+                <select
+                  value={draftFish.type}
+                  onChange={(e) => setDraftFish((prev) => ({ ...prev, type: e.target.value }))}
+                >
+                  <option value="담수">담수</option>
+                  <option value="해수">해수</option>
+                </select>
+              </label>
+
+              <label className="field-label">
+                물고기 사진
+                <input type="file" accept="image/*" onChange={handleImageUpload} />
+              </label>
+
+              <div className="fish-preview-box">
+                <img
+                  src={draftFish.image || (draftFish.type === '담수' ? fishAssets.freshwater : fishAssets.saltwater)}
+                  alt="물고기 미리보기"
+                />
+              </div>
+            </div>
+
+            <div className="modal-actions">
+              <button type="button" className="btn-secondary" onClick={() => setShowModal(false)}>
+                취소
+              </button>
+              <button type="button" className="btn-primary" onClick={handleAddCustomFish}>
+                추가하기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuthStore } from '../context/store';
+import { authAPI } from '../services/api';
 
 const initialSettings = {
   feeding: true,
@@ -14,6 +15,7 @@ export default function Settings() {
   const user = useAuthStore((state) => state.user);
   const updateProfile = useAuthStore((state) => state.updateProfile);
   const [isEditing, setIsEditing] = useState(false);
+  const [sendingTestEmail, setSendingTestEmail] = useState(false);
   const [formData, setFormData] = useState({
     username: user?.username || '',
     email: user?.email || '',
@@ -41,6 +43,23 @@ export default function Settings() {
       bio: formData.bio,
     });
     setIsEditing(false);
+  };
+
+  const handleSendTestEmail = async () => {
+    if (!user?.email) {
+      alert('로그인된 이메일 정보가 없습니다.');
+      return;
+    }
+
+    try {
+      setSendingTestEmail(true);
+      const response = await authAPI.sendTestEmail();
+      alert(response.message || `${user.email}로 테스트 알림을 보냈습니다.`);
+    } catch (error) {
+      alert(error.response?.data?.error || '테스트 알림 발송에 실패했습니다.');
+    } finally {
+      setSendingTestEmail(false);
+    }
   };
 
   const toggleSetting = (key) => {
@@ -203,6 +222,13 @@ export default function Settings() {
               </div>
             </div>
           ))}
+        </div>
+
+        <div className="test-email-wrapper">
+          <button type="button" className="btn-primary" onClick={handleSendTestEmail} disabled={sendingTestEmail}>
+            {sendingTestEmail ? '메일 보내는 중...' : '테스트 알림 보내기'}
+          </button>
+          <small>{user?.email || '로그인된 이메일 없음'}</small>
         </div>
       </section>
     </div>

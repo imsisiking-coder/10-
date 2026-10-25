@@ -1,7 +1,12 @@
 import axios from 'axios';
 import { useAuthStore } from '../context/store.js';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+const defaultApiBaseUrl =
+  typeof window !== 'undefined' && window.location.hostname !== 'localhost'
+    ? `${window.location.origin}/api/v1`
+    : 'http://localhost:5000/api/v1';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || defaultApiBaseUrl;
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -61,9 +66,9 @@ export const authAPI = {
     return response.data;
   },
 
-  login: async (email, password) => {
+  login: async (loginId, password) => {
     const response = await api.post('/auth/login', {
-      email,
+      loginId,
       password,
     });
     return response.data;
@@ -71,6 +76,11 @@ export const authAPI = {
 
   refresh: async (refreshToken) => {
     const response = await api.post('/auth/refresh', { refreshToken });
+    return response.data;
+  },
+
+  sendTestEmail: async () => {
+    const response = await api.post('/auth/send-test-email');
     return response.data;
   },
 };
