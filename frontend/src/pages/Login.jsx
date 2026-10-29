@@ -15,6 +15,12 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    if (!loginId.trim() || !password.trim()) {
+      setError('아이디와 비밀번호를 모두 입력해 주세요.');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -22,19 +28,7 @@ export default function Login() {
       setAuth(data.user, data.accessToken, data.refreshToken);
       navigate('/dashboard');
     } catch (err) {
-      if (err.response?.status === 401 || err.code === 'ERR_NETWORK' || !err.response) {
-        const demoUser = {
-          id: Date.now(),
-          email: loginId.includes('@') ? loginId : 'demo@example.com',
-          username: loginId || '테스트사용자',
-        };
-
-        setAuth(demoUser, 'demo_access_token', 'demo_refresh_token');
-        navigate('/dashboard');
-        return;
-      }
-
-      setError(err.response?.data?.error || '로그인 실패');
+      setError(err.response?.data?.error || '로그인 실패. 계정 정보를 다시 확인해 주세요.');
     } finally {
       setLoading(false);
     }

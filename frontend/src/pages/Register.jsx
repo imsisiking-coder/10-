@@ -16,32 +16,25 @@ export default function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    setLoading(true);
+
+    if (!username.trim() || !email.trim() || !password.trim()) {
+      setError('이름, 이메일, 비밀번호를 모두 입력해 주세요.');
+      return;
+    }
 
     if (password.length < 6) {
       setError('비밀번호는 최소 6자 이상이어야 합니다.');
-      setLoading(false);
       return;
     }
+
+    setLoading(true);
 
     try {
       const data = await authAPI.register(email, password, username);
       setAuth(data.user, data.accessToken, data.refreshToken);
       navigate('/dashboard');
     } catch (err) {
-      const fallbackUser = {
-        id: Date.now(),
-        email,
-        username: username || email.split('@')[0],
-      };
-
-      if (err.response?.status === 400 || err.code === 'ERR_NETWORK' || !err.response) {
-        setAuth(fallbackUser, 'demo_access_token', 'demo_refresh_token');
-        navigate('/dashboard');
-        return;
-      }
-
-      setError(err.response?.data?.error || '회원가입 실패');
+      setError(err.response?.data?.error || '회원가입 실패. 입력 정보를 다시 확인해 주세요.');
     } finally {
       setLoading(false);
     }
