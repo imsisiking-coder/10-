@@ -1,11 +1,43 @@
 import { create } from 'zustand';
 
+const GUEST_EMAIL = 'guest@fishcare.app';
+const GUEST_USERNAME = '게스트 사용자';
+const GUEST_ACCESS_TOKEN = 'guest_access_token';
+const GUEST_REFRESH_TOKEN = 'guest_refresh_token';
+
+const isExplicitGuestSession = (user, accessToken, refreshToken) => {
+  return (
+    user &&
+    accessToken === GUEST_ACCESS_TOKEN &&
+    refreshToken === GUEST_REFRESH_TOKEN &&
+    (user.email === GUEST_EMAIL || user.username === GUEST_USERNAME)
+  );
+};
+
+const isSuspiciousGuestSession = (user, accessToken, refreshToken) => {
+  const guestTokens = [GUEST_ACCESS_TOKEN, GUEST_REFRESH_TOKEN];
+
+  return (
+    guestTokens.includes(accessToken) ||
+    guestTokens.includes(refreshToken) ||
+    (user && (user.email === GUEST_EMAIL || user.username === GUEST_USERNAME))
+  ) && !isExplicitGuestSession(user, accessToken, refreshToken);
+};
+
 export const useAuthStore = create((set) => ({
   user: null,
   accessToken: null,
   refreshToken: null,
 
   setAuth: (user, accessToken, refreshToken) => {
+    if (isSuspiciousGuestSession(user, accessToken, refreshToken)) {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
+      set({ user: null, accessToken: null, refreshToken: null });
+      return;
+    }
+
     set({ user, accessToken, refreshToken });
     localStorage.setItem('accessToken', accessToken);
     localStorage.setItem('refreshToken', refreshToken);
@@ -32,12 +64,30 @@ export const useAuthStore = create((set) => ({
     const refreshToken = localStorage.getItem('refreshToken');
     const user = localStorage.getItem('user');
 
-    if (accessToken && refreshToken && user) {
+    if (!accessToken || !refreshToken || !user) {
+      return;
+    }
+
+    try {
+      const parsedUser = JSON.parse(user);
+      if (isSuspiciousGuestSession(parsedUser, accessToken, refreshToken)) {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
+        set({ user: null, accessToken: null, refreshToken: null });
+        return;
+      }
+
       set({
         accessToken,
         refreshToken,
-        user: JSON.parse(user),
+        user: parsedUser,
       });
+    } catch (error) {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
+      set({ user: null, accessToken: null, refreshToken: null });
     }
   },
 }));

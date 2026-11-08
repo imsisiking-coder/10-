@@ -36,7 +36,7 @@ export default function Login() {
 
   const handleGuestLogin = () => {
     const guestUser = {
-      id: Date.now(),
+      id: 'guest-demo',
       email: 'guest@fishcare.app',
       username: '게스트 사용자',
     };
@@ -79,11 +79,16 @@ export default function Login() {
           <button type="submit" disabled={loading}>
             {loading ? '로그인 중...' : '로그인'}
           </button>
-        </form>
 
-        <button type="button" className="guest-login-button" onClick={handleGuestLogin}>
-          게스트로 입장하기
-        </button>
+          <button
+            type="button"
+            className="guest-login-button"
+            onClick={handleGuestLogin}
+            disabled={loading}
+          >
+            게스트로 둘러보기
+          </button>
+        </form>
 
         <p className="auth-link">
           계정이 없나요? <Link to="/register">회원가입</Link>

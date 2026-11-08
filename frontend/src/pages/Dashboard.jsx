@@ -89,11 +89,13 @@ export default function Dashboard() {
   };
 
   const completeAllTasks = () => {
+    const shouldCompleteAll = !tasks.every((task) => task.done);
+
     setTasks((prev) =>
       prev.map((task) => ({
         ...task,
-        done: true,
-        status: '완료',
+        done: shouldCompleteAll,
+        status: shouldCompleteAll ? '완료' : '대기',
       }))
     );
   };
@@ -268,38 +270,34 @@ export default function Dashboard() {
           <div className="panel-header">
             <h3>오늘의 작업 현황</h3>
             <button type="button" className="btn-secondary" onClick={completeAllTasks}>
-              완료 체크
+              모두 완료
             </button>
           </div>
 
           <div className="task-list">
-            {tasks.map((task) => (
-              <div key={task.id} className="task-item">
-                <div className="task-left">
-                  <div
-                    className="task-icon"
-                    onClick={() => toggleTask(task.id)}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter' || event.key === ' ') {
-                        event.preventDefault();
-                        toggleTask(task.id);
-                      }
-                    }}
-                  >
-                    {task.title === '급이' ? '🍽️' : task.title === '물 교환' ? '💧' : '🧹'}
+            {tasks.length === 0 ? (
+              <div className="empty-state-box">오늘 할 일을 추가해보세요.</div>
+            ) : (
+              tasks.map((task) => (
+                <label key={task.id} className={`task-item ${task.done ? 'is-complete' : ''}`}>
+                  <div className="task-left">
+                    <input
+                      type="checkbox"
+                      className="task-checkbox"
+                      checked={task.done}
+                      onChange={() => toggleTask(task.id)}
+                    />
+                    <div className="task-copy">
+                      <strong>{task.title}</strong>
+                      <p>{task.time}</p>
+                    </div>
                   </div>
-                  <div className="task-copy">
-                    <strong>{task.title}</strong>
-                    <p>{task.time}</p>
-                  </div>
-                </div>
-                <button type="button" className={task.done ? 'status-badge done' : 'status-badge warning'} onClick={() => toggleTask(task.id)}>
-                  {task.status}
-                </button>
-              </div>
-            ))}
+                  <span className={task.done ? 'status-badge done' : 'status-badge warning'}>
+                    {task.status}
+                  </span>
+                </label>
+              ))
+            )}
           </div>
         </div>
 

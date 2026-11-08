@@ -2,8 +2,15 @@ import axios from 'axios';
 import { useAuthStore } from '../context/store.js';
 
 const defaultApiBaseUrl =
-  typeof window !== 'undefined' && window.location.hostname !== 'localhost'
-    ? `${window.location.origin}/api/v1`
+  typeof window !== 'undefined'
+    ? (() => {
+        const localHosts = ['localhost', '127.0.0.1', '::1'];
+        const isLocalHost = localHosts.includes(window.location.hostname);
+
+        return isLocalHost
+          ? 'http://localhost:5000/api/v1'
+          : `${window.location.origin}/api/v1`;
+      })()
     : 'http://localhost:5000/api/v1';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || defaultApiBaseUrl;

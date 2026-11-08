@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { fishAssets } from '../assets/fish/fishAssets';
 import { useAquariumStore } from '../context/store';
 
@@ -25,6 +25,7 @@ export default function Search() {
   const [query, setQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('전체');
   const [showModal, setShowModal] = useState(false);
+  const [selectedAquariumId, setSelectedAquariumId] = useState('');
   const [draftFish, setDraftFish] = useState({
     name: '',
     type: '담수',
@@ -33,6 +34,20 @@ export default function Search() {
   const [customFishList, setCustomFishList] = useState([]);
   const aquariums = useAquariumStore((state) => state.aquariums);
   const addFishToAquarium = useAquariumStore((state) => state.addFishToAquarium);
+
+  useEffect(() => {
+    if (!aquariums.length) {
+      setSelectedAquariumId('');
+      return;
+    }
+
+    const hasSelectedAquarium = aquariums.some((aquarium) => String(aquarium.id) === String(selectedAquariumId));
+    if (!hasSelectedAquarium) {
+      setSelectedAquariumId(String(aquariums[0].id));
+    }
+  }, [aquariums, selectedAquariumId]);
+
+  const selectedAquarium = aquariums.find((aquarium) => String(aquarium.id) === String(selectedAquariumId)) || aquariums[0] || null;
 
   const allFish = useMemo(() => [...fishData, ...customFishList], [customFishList]);
 
@@ -54,13 +69,7 @@ export default function Search() {
       return;
     }
 
-    const targetAquarium = aquariums[0];
-    const hasFish = (targetAquarium.Fish || []).some((item) => item.name === fish.name);
-
-    if (hasFish) {
-      alert(`${fish.name}은(는) 이미 ${targetAquarium.name}에 등록되어 있습니다.`);
-      return;
-    }
+    const targetAquarium = selectedAquarium || aquariums[0];
 
     addFishToAquarium(targetAquarium.id, {
       ...fish,
@@ -141,6 +150,24 @@ export default function Search() {
             +
           </button>
         </div>
+
+        {aquariums.length > 0 && (
+          <div className="filter-row" style={{ marginTop: '0.75rem' }}>
+            <label className="field-label" style={{ minWidth: 220, flex: 1 }}>
+              <span>대상 어항</span>
+              <select
+                value={selectedAquariumId}
+                onChange={(e) => setSelectedAquariumId(e.target.value)}
+              >
+                {aquariums.map((aquarium) => (
+                  <option key={aquarium.id} value={String(aquarium.id)}>
+                    {aquarium.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+        )}
 
         <div className="filter-row">
           {filters.map((filter) => (

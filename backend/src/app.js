@@ -29,9 +29,24 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const frontendDistPath = path.resolve(__dirname, '../public');
 
+const configuredFrontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+const allowedOrigins = new Set([
+  configuredFrontendUrl,
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  'http://[::1]:3000',
+]);
+
 // 미들웨어
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.has(origin)) {
+      callback(null, true);
+      return;
+    }
+
+    callback(new Error(`CORS 차단: 허용되지 않은 Origin (${origin})`));
+  },
   credentials: true,
 }));
 app.use(express.json());

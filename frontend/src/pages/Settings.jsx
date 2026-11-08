@@ -224,12 +224,6 @@ export default function Settings() {
           ))}
         </div>
 
-        <div className="test-email-wrapper">
-          <button type="button" className="btn-primary" onClick={handleSendTestEmail} disabled={sendingTestEmail}>
-            {sendingTestEmail ? '메일 보내는 중...' : '테스트 알림 보내기'}
-          </button>
-          <small>{user?.email || '로그인된 이메일 없음'}</small>
-        </div>
       </section>
     </div>
   );
