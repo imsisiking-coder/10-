@@ -33,14 +33,30 @@ const configuredFrontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000
 const allowedOrigins = new Set([
   configuredFrontendUrl,
   'http://localhost:3000',
+  'http://localhost:4173',
   'http://127.0.0.1:3000',
+  'http://127.0.0.1:4173',
   'http://[::1]:3000',
+  'http://[::1]:4173',
+  'https://fishcare-demo-20261024-001.azurewebsites.net',
 ]);
+
+const isAllowedOrigin = (origin) => {
+  if (!origin) {
+    return true;
+  }
+
+  if (allowedOrigins.has(origin)) {
+    return true;
+  }
+
+  return origin.endsWith('.azurewebsites.net') || origin.includes('localhost') || origin.includes('127.0.0.1') || origin.includes('[::1]');
+};
 
 // 미들웨어
 app.use(cors({
   origin(origin, callback) {
-    if (!origin || allowedOrigins.has(origin)) {
+    if (isAllowedOrigin(origin)) {
       callback(null, true);
       return;
     }
@@ -76,7 +92,7 @@ if (existsSync(frontendDistPath)) {
 app.use(errorHandler);
 
 // 데이터베이스 동기화 및 서버 시작
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 8080;
 
 async function startServer() {
   try {
